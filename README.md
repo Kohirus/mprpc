@@ -11,4 +11,12 @@ You just need to type the following command:
 ./autobuild.sh
 ```
 
-Then the library file will then be generated in the `bin` directory.
+Then the library file will then be generated in the `lib` directory.
+
+Alternatively, you can create the `build` directory and enter, then type the following 
+command to manually build the project:
+
+```sh
+cmake ..
+make
+```
