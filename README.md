@@ -1,0 +1,14 @@
+# mprpc
+
+A high-performance distributed network framework, it uses `muduo` to handle network IO
+, and uses `protubuf` to do the serialization and deserialization.
+
+# How to use
+
+You just need to type the following command:
+
+```sh
+./autobuild.sh
+```
+
+Then the library file will then be generated in the `bin` directory.
