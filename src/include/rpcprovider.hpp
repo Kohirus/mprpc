@@ -25,6 +25,8 @@ private:
     void OnConnention(const muduo::net::TcpConnectionPtr&);
     // 回调函数: 处理读写事件
     void OnMessage(const muduo::net::TcpConnectionPtr&, muduo::net::Buffer*, muduo::Timestamp);
+    // 回调函数: 序列化 RPC 的响应和网络发送
+    void sendRpcResponse(const muduo::net::TcpConnectionPtr&, google::protobuf::Message*);
 
 private:
     muduo::net::EventLoop _eventLoop;
