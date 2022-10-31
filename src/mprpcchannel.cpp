@@ -17,6 +17,7 @@ void MprpcChannel::CallMethod(
     const google::protobuf::Message*          request,
     google::protobuf::Message*                response,
     google::protobuf::Closure*                done) {
+
     // 获取服务描述对象
     const google::protobuf::ServiceDescriptor* sd = method->service();
     // 获取服务名和方法名
@@ -98,9 +99,8 @@ void MprpcChannel::CallMethod(
     }
 
     // 反序列化 rpc 调用的响应数据
-    std::string response_str(recv_buf, 0, recv_size);
-    if (response->ParseFromString(response_str)) {
-        std::cout << "Failed to parse response str: " << response_str << std::endl;
+    if (!response->ParseFromArray(recv_buf, recv_size)) {
+        std::cout << "Failed to parse receive buffer: " << recv_buf << std::endl;
         close(clientfd);
         return;
     }

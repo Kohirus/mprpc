@@ -13,8 +13,24 @@ int main(int argc, char* argv[]) {
     fixbug::LoginResponse response;
     // 同步RPC调用
     stub.Login(nullptr, &request, &response, nullptr);
+
     // 一次RPC调用完成 读调用的结果
     if (response.result().errcode() == 0) {
+        std::cout << "RPC Login response success: " << response.success() << std::endl;
+    } else {
+        std::cout << "RPC Login response error: " << response.result().errmsg() << std::endl;
+    }
+
+    fixbug::RegisterRequest req;
+    req.set_id(2000);
+    req.set_name("Zhang Duoduo");
+    req.set_pwd("66666");
+    fixbug::RegisterResponse rsp;
+
+    stub.Register(nullptr, &req, &rsp, nullptr);
+
+    // 一次RPC调用完成 读调用的结果
+    if (rsp.result().errcode() == 0) {
         std::cout << "RPC Login response success: " << response.success() << std::endl;
     } else {
         std::cout << "RPC Login response error: " << response.result().errmsg() << std::endl;
