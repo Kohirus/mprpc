@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "mprpcapplication.hpp"
+#include "mprpccontroller.hpp"
 
 void MprpcChannel::CallMethod(
     const google::protobuf::MethodDescriptor* method,
@@ -30,7 +31,8 @@ void MprpcChannel::CallMethod(
     if (request->SerializeToString(&args_str)) {
         args_size = args_str.size();
     } else {
-        std::cout << "Failed to serialize request!" << std::endl;
+        controller->SetFailed("Failed to serialize request!");
+        return;
     }
 
     // 定义RPC的请求Header
@@ -44,7 +46,8 @@ void MprpcChannel::CallMethod(
     if (rpcHeader.SerializeToString(&rpc_header_str)) {
         header_size = rpc_header_str.size();
     } else {
-        std::cout << "Failed to serialize rpc header!" << std::endl;
+        controller->SetFailed("Failed to serialize rpc header!");
+        return;
     }
 
     // 组织待发送的 rpc 请求的字符串
@@ -64,8 +67,10 @@ void MprpcChannel::CallMethod(
     // 使用简单的 TCP 编程 完成 RPC 方法的远程调用即可
     int clientfd = socket(AF_INET, SOCK_STREAM, 0);
     if (clientfd == -1) {
-        std::cout << "Failed to create socket! Errno: " << errno << std::endl;
-        exit(EXIT_FAILURE);
+        char errtext[512] = { 0 };
+        sprintf(errtext, "Failed to create socket! Errno: %d", errno);
+        controller->SetFailed(errtext);
+        return;
     }
 
     std::string ip   = MprpcApplication::GetInstance().GetConfig().Load("rpcserverip");
@@ -77,14 +82,18 @@ void MprpcChannel::CallMethod(
     server_addr.sin_addr.s_addr = inet_addr(ip.c_str());
 
     if (-1 == connect(clientfd, (struct sockaddr*)&server_addr, sizeof(server_addr))) {
-        std::cout << "Failed to connect! Errno: " << errno << std::endl;
+        char errtext[512] = { 0 };
+        sprintf(errtext, "Failed to connect! Errno: %d", errno);
+        controller->SetFailed(errtext);
         close(clientfd);
-        exit(EXIT_FAILURE);
+        return;
     }
 
     // 发送 RPC 请求
     if (-1 == send(clientfd, send_rpc_str.c_str(), send_rpc_str.size(), 0)) {
-        std::cout << "Failed to send rpc str! Errno: " << errno << std::endl;
+        char errtext[512] = { 0 };
+        sprintf(errtext, "Failed to send rpc str! Errno: %d", errno);
+        controller->SetFailed(errtext);
         close(clientfd);
         return;
     }
@@ -93,14 +102,18 @@ void MprpcChannel::CallMethod(
     char recv_buf[1024] = { 0 };
     int  recv_size      = 0;
     if (-1 == (recv_size = recv(clientfd, recv_buf, 1024, 0))) {
-        std::cout << "Failed to recv! Errno: " << errno << std::endl;
+        char errtext[512] = { 0 };
+        sprintf(errtext, "Failed to recv rpc str! Errno: %d", errno);
+        controller->SetFailed(errtext);
         close(clientfd);
         return;
     }
 
     // 反序列化 rpc 调用的响应数据
     if (!response->ParseFromArray(recv_buf, recv_size)) {
-        std::cout << "Failed to parse receive buffer: " << recv_buf << std::endl;
+        char errtext[512] = { 0 };
+        sprintf(errtext, "Failed to parse reveive buffer: %s", recv_buf);
+        controller->SetFailed(errtext);
         close(clientfd);
         return;
     }

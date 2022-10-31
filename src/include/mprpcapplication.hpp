@@ -2,6 +2,8 @@
 #define __MPRPC_APPLICATION_H__
 
 #include "mprpcconfig.hpp"
+#include "mprpcchannel.hpp"
+#include "mprpccontroller.hpp"
 
 /// @brief mprpc 框架的初始化类
 class MprpcApplication {
