@@ -6,6 +6,7 @@
 #include "mprpcapplication.hpp"
 #include <google/protobuf/descriptor.h>
 #include "rpcheader.pb.h"
+#include "logger.hpp"
 
 void RpcProvider::NotifyService(google::protobuf::Service* service) {
     ServiceInfo service_info;
@@ -16,14 +17,14 @@ void RpcProvider::NotifyService(google::protobuf::Service* service) {
     // 获取服务数量
     int methodCnt = pserviceDesc->method_count();
 
-    std::cout << "service_name: " << service_name << std::endl;
+    LOG_INFO("service name: %s", service_name.c_str());
 
     for (int i = 0; i < methodCnt; i++) {
         // 获取服务方法的名字
         const google::protobuf::MethodDescriptor* pmethodDesc = pserviceDesc->method(i);
         std::string                               method_name = pmethodDesc->name();
         service_info._methodMap.insert({ method_name, pmethodDesc });
-        std::cout << "method_name: " << method_name << std::endl;
+        LOG_INFO("method_name: %s", method_name.c_str());
     }
     service_info._service = service;
     _serviceMap.insert({ service_name, service_info });
@@ -44,6 +45,7 @@ void RpcProvider::Run() {
     server.setThreadNum(4);
 
     std::cout << "RpcProvider start service at IP[" << ip << "]:Port[" << port << "]" << std::endl;
+    LOG_INFO("RpcProvider start service at IP[%s]:Port[%d]", ip.c_str(), port);
 
     // 启动网络服务
     server.start();
@@ -85,7 +87,7 @@ void RpcProvider::OnMessage(const muduo::net::TcpConnectionPtr& conn,
         args_size    = rpcHeader.args_size();
     } else {
         // 数据头反序列化失败
-        std::cout << "rpc_header_str: " << rpc_header_str << " parse error!" << std::endl;
+        LOG_ERR("rpc_header_str: %s parse error!", rpc_header_str.c_str());
     }
 
     // 获取 RPC 方法参数的字符流数据
