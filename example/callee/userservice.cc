@@ -2,7 +2,7 @@
 #include <string>
 #include "user.pb.h"
 #include "mprpcapplication.hpp"
-#include "rpcprovider.hpp"
+#include "mprpcprovider.hpp"
 
 class UserService : public fixbug::UserServiceRpc {
 public:
